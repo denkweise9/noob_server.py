@@ -6,6 +6,7 @@
 # client and server coroutines communicating with message passing
 # (asynchronous concurrent programming);
 # see http://asyncoro.sourceforge.net/tutorial.html for details.
+# introduced here is the simple concept of "co-routine stacking', example at bottom
 
 
 '''
@@ -190,3 +191,48 @@ class Loop(object):
                 self.val = current_task.send(None)
             except(StopIteration):
                 pass
+
+            
+'''
+  
+import asyncio
+loop = asyncio.get_event_loop()
+
+#we make a simple function using co-routine loop calls on whatever passed
+def execute(coroutine_object):
+    return loop.run_until_complete(coroutine_object)
+
+
+
+In [450]: async def there(func):      
+     ...:     greet = await func   # we await for the function call
+     ...:     if greet:
+     ...:         return greet, 'there' 
+
+In [446]: async def foo(func):
+     ...:     word = await func
+     ...:     if word:
+     ...:         return word, 'foo'
+
+
+execute(foo(there(hello())))  #  <--- this proves we can stack event loops into a single call. Why aren't more doing this?
+
+execute works on 1 co-routine, or 100 co-routines.
+if conditions are contained within co-routines, execute will follow those conditons for you.
+#output
+(('hello ', 'there'), 'foo')
+
+
+# Although async looks stupid when being used to say 'hi', it solves a huge amount of problems
+# where you need concurrency and asynchronous actions in things like networking
+
+
+usually I see the following used
+
+if __name__ == '__main__':
+   loop.run_until_complete(coroutine_object_0)
+   loop.run_until_complete(coroutine_object_1)
+   loop.run_until_complete(coroutine_object_2)
+   loop.run_until_complete(coroutine_object_3)
+
+  '''
