@@ -36,7 +36,7 @@ except(ImportError):
     facts=r"""
         You are missing dependencies for networking!
         Please make sure you have the following:
-                asyncoro, taskhive_main
+                    asyncoro
            """
     print(facts)
     sys.exit()
