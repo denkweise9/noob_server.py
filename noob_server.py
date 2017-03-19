@@ -11,8 +11,10 @@
 
 '''
     noob_server.py is for async co-routine networking.
-    Copyright (C) 2017      Authors: Denkweise9, Lvl4Sword
-
+    Copyright (C) 2017      Authors: Denkweise9, Lvl4Sword, David Beazely
+    The event loop class was taken from a pycon talk and credit is given
+    to David Beazely
+    
     This program is free software: you can redistribute it and/or modify
     it under the terms of the GNU Affero General Public License as
     published by the Free Software Foundation, either version 3 of the
@@ -28,7 +30,7 @@
 '''
 
 try:
-    import asyncio, asyncoro, socket
+    import asyncio, asyncoro, socket  
     # The following below is for event loops
     from types import coroutine
     from collections import deque
@@ -45,7 +47,7 @@ except(ImportError):
 
 
 loop = asyncio.get_event_loop()
-socket_object = asyncoro.socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+socket_object = asyncoro.socket.socket(socket.AF_INET, socket.SOCK_STREAM, 0)
 
 def execute(func):
     return loop.run_until_complete(func) 
@@ -55,11 +57,11 @@ def Execute(func): #this uses the alternative loop handler
 
 #Need to add 
 def networking_client(object):
-    async def upload_data(address, data):
+    async def send_data(address, data):
         self.sock = socket_object
         self.sock.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         self.sock.bind(address)
-        self.sock.listen(5)
+        self.sock.send(bytes(str(data),'utf-8'))
         self.sock.setblocking(False)
         while self.sock:
             address, data = await self.loop.socket_accept(sock)  #this is using asyncio, we have Loop if needed
@@ -86,15 +88,6 @@ def networking_client(object):
                     self.socket.close()
                 else:
                     await self.loop.sock_sendall(client, b"Received: " + data)
-        print("Connection closed")
-
-    async def echo_handler(client):  #also requires sockets.
-        with client:
-            while True:
-                data = await self.loop.sock_recv(client, 10000)
-                if not data:
-                    break
-                await self.loop.sock_sendall(client, b'Received: ' + data)
         print("Connection closed")
 
 
@@ -132,10 +125,9 @@ def networking_client(object):
 
 
 
-# The following is an edited event loop created by David Beazley
+# The following is a slightly edited event loop created by David Beazley
 # It can replace asyncio.get_event_loop() for certain tasks
-# This loop proves to be faster on certain tasks
-# noob_serv intends to use this base for improved event handling
+# noob_serv intends to use this base for improved event handling, and improve the event loop.
 
 @coroutine
 def read_wait(sock):
